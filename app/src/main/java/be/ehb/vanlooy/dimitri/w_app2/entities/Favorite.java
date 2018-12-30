@@ -13,6 +13,9 @@ public class Favorite {
     private double lat;
     private double lon;
 
+    public Favorite() {
+    }
+
     public Favorite(String country, String city, double lat, double lon) {
         this.country = country;
         this.city = city;
