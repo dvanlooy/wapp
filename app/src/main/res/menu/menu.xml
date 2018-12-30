@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="@string/today"
+        android:id="@+id/menu_today"/>
+    <item android:title="@string/forecast"
+        android:id="@+id/menu_forecast"/>
+    <item android:title="@string/favorites"
+        android:id="@+id/menu_favorites"/>
+</menu>
