@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
                 Weather weather = Weather.fromJSON(response);
                 Log.d("WAPP", "Weather: " + weather.toString());
                 setBackground(weather);
-                updateMainActivity(weather);
+                updateActivity(weather);
                 mCurrentlocation = new Favorite(
                         weather.getCountryCode(),
                         weather.getCity(),
@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void updateMainActivity(Weather weather){
+    private void updateActivity(Weather weather){
         mTempText.setText(weather.getTemp());
         mLocationText.setText(weather.getCity());
 

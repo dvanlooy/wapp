@@ -34,7 +34,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="be.ehb.vanlooy.dimitri.w_app2.ForecastListActivity" />
         </activity>
-        <activity android:name=".FavoritesActivity"></activity>
+        <activity android:name=".FavoritesActivity" />
+        <activity android:name=".FavoriteWeatherActivity"></activity>
     </application>
 
 </manifest>

@@ -39,6 +39,8 @@ public class FavoritesActivity extends AppCompatActivity {
                 adapter.setFavorites(favorites);
             }
         });
+
+
     }
 
     @Override

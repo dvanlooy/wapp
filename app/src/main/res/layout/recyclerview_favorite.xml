@@ -10,6 +10,6 @@
         android:layout_height="match_parent"
         android:layout_weight="4"
         android:padding="8dp"
-        android:text="test" />
+        android:text="test"/>
 
 </LinearLayout>
