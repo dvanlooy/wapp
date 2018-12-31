@@ -36,6 +36,7 @@ import be.ehb.vanlooy.dimitri.w_app2.entities.Forecast;
 import be.ehb.vanlooy.dimitri.w_app2.repositories.WappRepository;
 import cz.msebera.android.httpclient.Header;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -60,11 +61,12 @@ public class ForecastListActivity extends AppCompatActivity {
 
     String TAG = ForecastListActivity.class.getSimpleName();
     CharSequence textToast;
+    List<Forecast.Item> mItems = new ArrayList<Forecast.Item>();
 
 
     LocationManager mLocationManager;
     LocationListener mLocationListener;
-    WappRepository mRepository;
+
 
     Favorite mCurrentlocation;
 
@@ -78,8 +80,6 @@ public class ForecastListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forecast_list);
-
-        mRepository = WappRepository.getInstance(this.getApplication());
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -96,8 +96,8 @@ public class ForecastListActivity extends AppCompatActivity {
         View recyclerView = findViewById(R.id.forecast_list);
         assert recyclerView != null;
         setupRecyclerView((RecyclerView) recyclerView);
-
         getForecastForCurrentLocation();
+
     }
 
     @Override
@@ -131,14 +131,15 @@ public class ForecastListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, DummyContent.ITEMS, mTwoPane));
+
+        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, mItems, mTwoPane));
     }
 
     public static class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
         private final ForecastListActivity mParentActivity;
-        private final List<DummyContent.DummyItem> mValues;
+        private final List<Forecast.Item> mValues;
         private final boolean mTwoPane;
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
@@ -163,7 +164,7 @@ public class ForecastListActivity extends AppCompatActivity {
         };
 
         SimpleItemRecyclerViewAdapter(ForecastListActivity parent,
-                                      List<DummyContent.DummyItem> items,
+                                      List<Forecast.Item> items,
                                       boolean twoPane) {
             mValues = items;
             mParentActivity = parent;
@@ -174,13 +175,14 @@ public class ForecastListActivity extends AppCompatActivity {
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.forecast_list_content, parent, false);
+
             return new ViewHolder(view);
         }
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.mIdView.setText(mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).content);
+            holder.mIdView.setText(mValues.get(position).getDt());
+            holder.mContentView.setText(mValues.get(position).getDt_txt());
 
             holder.itemView.setTag(mValues.get(position));
             holder.itemView.setOnClickListener(mOnClickListener);
@@ -271,8 +273,7 @@ public class ForecastListActivity extends AppCompatActivity {
                 Gson gson = new Gson();
                 Forecast forecast = gson.fromJson(response.toString(), Forecast.class);
                 Log.d("WAPP", "Forecast: " + forecast.toString());
-                //setBackground(weather);
-                //updateActivity(weather);
+                mItems.addAll(forecast.getList());
             }
 
             @Override
