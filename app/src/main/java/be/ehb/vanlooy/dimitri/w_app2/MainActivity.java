@@ -21,12 +21,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 import org.json.JSONObject;
 
+import be.ehb.vanlooy.dimitri.w_app2.Utils.IconHelper;
+import be.ehb.vanlooy.dimitri.w_app2.entities.CurrentWeather;
 import be.ehb.vanlooy.dimitri.w_app2.entities.Favorite;
 import be.ehb.vanlooy.dimitri.w_app2.repositories.WappRepository;
 import cz.msebera.android.httpclient.Header;
@@ -37,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     final int REQUEST_CODE = 123;
     final String WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather";
     final String APP_ID = "1e41911417841305361f8f6d203b4d9c";
-    final long MIN_TIME = 5000;
+    final long MIN_TIME = 0;
     final float MIN_DISTANCE = 1000;
     final String LOCATION_PROVIDER = LocationManager.GPS_PROVIDER;
     final int DURATION = Toast.LENGTH_SHORT;
@@ -108,16 +111,19 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent;
         switch(item.getItemId()) {
             case R.id.menu_favorites:
-                Intent intent = new Intent(this, FavoritesActivity.class);
+                intent = new Intent(this, FavoritesActivity.class);
                 this.startActivity(intent);
                 break;
             case R.id.menu_forecast:
-                // another startActivity, this is for item with id "menu_item2"
+                intent = new Intent(this, ForecastListActivity.class);
+                this.startActivity(intent);
                 break;
             case R.id.menu_today:
-                // another startActivity, this is for item with id "menu_item2"
+                intent = new Intent(this, MainActivity.class);
+                this.startActivity(intent);
                 break;
             default:
                 return super.onOptionsItemSelected(item);
@@ -144,6 +150,8 @@ public class MainActivity extends AppCompatActivity {
                 params.put("appid", APP_ID);
                 requestData(params);
             }
+
+
 
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -189,15 +197,18 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 super.onSuccess(statusCode, headers, response);
                 Log.d("WAPP", "JSON: " + response.toString());
-                Weather weather = Weather.fromJSON(response);
-                Log.d("WAPP", "Weather: " + weather.toString());
-                setBackground(weather);
-                updateActivity(weather);
+
+                Gson gson = new Gson();
+                CurrentWeather currentWeather = gson.fromJson(response.toString(), CurrentWeather.class);
+                Log.d("WAPP", "CurrentWeather: " + currentWeather.toString());
+                setBackground(currentWeather);
+                updateActivity(currentWeather);
+
                 mCurrentlocation = new Favorite(
-                        weather.getCountryCode(),
-                        weather.getCity(),
-                        weather.getLat(),
-                        weather.getLon()
+                        currentWeather.getSys().getCountry(),
+                        currentWeather.getName(),
+                        currentWeather.getCoord().getLat(),
+                        currentWeather.getCoord().getLon()
                 );
             }
 
@@ -212,20 +223,26 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void updateActivity(Weather weather){
-        mTempText.setText(weather.getTemp());
-        mLocationText.setText(weather.getCity());
+    private void updateActivity(CurrentWeather currentWeather){
+        String temp = String.valueOf(currentWeather.getMain().getInCelcius(currentWeather.getMain().getTemp()))+"°C";
+        String maxTemp = String.valueOf(currentWeather.getMain().getInCelcius(currentWeather.getMain().getTemp_max()))+"°C";
+        String minTemp = String.valueOf(currentWeather.getMain().getInCelcius(currentWeather.getMain().getTemp_min()))+"°C";
+        String location = currentWeather.getName()+", "+currentWeather.getSys().getCountry();
+        String descriptionCode = "c"+String.valueOf(currentWeather.getWeather().get(0).getId());
 
-        mMaxTempText.setText(weather.getTempMax());
-        mMinTempText.setText(weather.getTempMin());
+        mTempText.setText(temp);
+        mLocationText.setText(location);
+        mMaxTempText.setText(maxTemp);
+        mMinTempText.setText(minTemp);
 
-        int descriptionResourceID = getResources().getIdentifier("c"+String.valueOf(weather.getWeatherCode()), "string", getPackageName());
+        int descriptionResourceID = getResources().getIdentifier(descriptionCode, "string", getPackageName());
         mDescriptionText.setText(getResources().getString(descriptionResourceID));
-        String suffix = weather.getIcon();
+
+        String suffix = IconHelper.getWeatherIcon(currentWeather.getWeather().get(0).getId());
         String prefix = "day_";
         Long ts = System.currentTimeMillis()/1000;
-        Long sunset = weather.getSunset();
-        Long sunrise = weather.getSunrise();
+        Long sunset = currentWeather.getSys().getSunset();
+        Long sunrise = currentWeather.getSys().getSunrise();
         if (ts != null && sunset != null && sunrise != null){
             if (ts < sunrise || ts >= sunset){
                 prefix = "night_";
@@ -236,12 +253,12 @@ public class MainActivity extends AppCompatActivity {
         int imageResourceID = getResources().getIdentifier(prefix+suffix, "drawable", getPackageName());
         mWeatherIcon.setImageResource(imageResourceID);
     }
-    private void setBackground(Weather weather) {
+    private void setBackground(CurrentWeather currentWeather) {
 
         String type = "bg_day";
         Long ts = System.currentTimeMillis()/1000;
-        Long sunset = weather.getSunset();
-        Long sunrise = weather.getSunrise();
+        Long sunset = currentWeather.getSys().getSunset();
+        Long sunrise = currentWeather.getSys().getSunrise();
         if (ts != null && sunset != null && sunrise != null){
             if (ts < sunrise || ts >= sunset){
                 type = "bg_night";

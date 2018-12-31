@@ -3,9 +3,6 @@ package be.ehb.vanlooy.dimitri.w_app2.repositories;
 import android.app.Application;
 import android.arch.lifecycle.LiveData;
 
-import java.util.ArrayList;
-
-import be.ehb.vanlooy.dimitri.w_app2.Weather;
 import be.ehb.vanlooy.dimitri.w_app2.daos.FavoriteDAO;
 import be.ehb.vanlooy.dimitri.w_app2.databases.WappRoomDatabase;
 import be.ehb.vanlooy.dimitri.w_app2.entities.Favorite;
@@ -48,9 +45,5 @@ public class WappRepository {
         return favoriteDAO.getAllFavorites();
     }
 
-    public ArrayList<Weather> getForecast(){
-        ArrayList<Weather> forecast = new ArrayList<Weather>();
 
-        return forecast;
-    }
 }

@@ -4,11 +4,13 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.graphics.Canvas;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,15 +21,14 @@ import be.ehb.vanlooy.dimitri.w_app2.viewmodels.FavoritesViewModel;
 public class FavoritesActivity extends AppCompatActivity {
 
     private FavoritesViewModel mFavoritesViewModel;
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorites);
 
-
-
-        RecyclerView recyclerView = findViewById(R.id.recyclerview);
+        recyclerView = findViewById(R.id.recyclerview);
         final FavoriteListAdapter adapter = new FavoriteListAdapter(this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -39,7 +40,6 @@ public class FavoritesActivity extends AppCompatActivity {
                 adapter.setFavorites(favorites);
             }
         });
-
 
     }
 
@@ -59,7 +59,8 @@ public class FavoritesActivity extends AppCompatActivity {
                 this.startActivity(intent);
                 break;
             case R.id.menu_forecast:
-                // another startActivity, this is for item with id "menu_item2"
+                intent = new Intent(this, ForecastListActivity.class);
+                this.startActivity(intent);
                 break;
             case R.id.menu_today:
                 intent = new Intent(this, MainActivity.class);

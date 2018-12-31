@@ -1,14 +1,19 @@
 package be.ehb.vanlooy.dimitri.w_app2;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,8 +21,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+
+import org.json.JSONObject;
 
 import be.ehb.vanlooy.dimitri.w_app2.dummy.DummyContent;
+import be.ehb.vanlooy.dimitri.w_app2.entities.Favorite;
+import be.ehb.vanlooy.dimitri.w_app2.entities.Forecast;
+import be.ehb.vanlooy.dimitri.w_app2.repositories.WappRepository;
+import cz.msebera.android.httpclient.Header;
 
 import java.util.List;
 
@@ -31,6 +48,26 @@ import java.util.List;
  */
 public class ForecastListActivity extends AppCompatActivity {
 
+
+    // Constants
+    final int REQUEST_CODE = 123;
+    final String WEATHER_URL = "http://api.openweathermap.org/data/2.5/forecast";
+    final String APP_ID = "1e41911417841305361f8f6d203b4d9c";
+    final long MIN_TIME = 0;
+    final float MIN_DISTANCE = 1000;
+    final String LOCATION_PROVIDER = LocationManager.GPS_PROVIDER;
+    final int DURATION = Toast.LENGTH_SHORT;
+
+    String TAG = ForecastListActivity.class.getSimpleName();
+    CharSequence textToast;
+
+
+    LocationManager mLocationManager;
+    LocationListener mLocationListener;
+    WappRepository mRepository;
+
+    Favorite mCurrentlocation;
+
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -42,18 +79,11 @@ public class ForecastListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forecast_list);
 
+        mRepository = WappRepository.getInstance(this.getApplication());
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         if (findViewById(R.id.forecast_detail_container) != null) {
             // The detail container view will be present only in the
@@ -66,6 +96,8 @@ public class ForecastListActivity extends AppCompatActivity {
         View recyclerView = findViewById(R.id.forecast_list);
         assert recyclerView != null;
         setupRecyclerView((RecyclerView) recyclerView);
+
+        getForecastForCurrentLocation();
     }
 
     @Override
@@ -77,16 +109,19 @@ public class ForecastListActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent;
         switch(item.getItemId()) {
             case R.id.menu_favorites:
-                Intent intent = new Intent(this, FavoritesActivity.class);
+                intent = new Intent(this, FavoritesActivity.class);
                 this.startActivity(intent);
                 break;
             case R.id.menu_forecast:
-                // another startActivity, this is for item with id "menu_item2"
+                intent = new Intent(this, ForecastListActivity.class);
+                this.startActivity(intent);
                 break;
             case R.id.menu_today:
-                // another startActivity, this is for item with id "menu_item2"
+                intent = new Intent(this, MainActivity.class);
+                this.startActivity(intent);
                 break;
             default:
                 return super.onOptionsItemSelected(item);
@@ -166,5 +201,88 @@ public class ForecastListActivity extends AppCompatActivity {
                 mContentView = (TextView) view.findViewById(R.id.content);
             }
         }
+    }
+
+    private void getForecastForCurrentLocation() {
+        Log.d("WAPP","GETTING FORECAST FOR CURRENT LOCATION");
+        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        mLocationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                Log.d("WAPP","LOCATION CHANGED");
+                String lat = String.valueOf(location.getLatitude());
+                String lon = String.valueOf(location.getLongitude());
+                Log.d("WAPP","LAT: "+lat);
+                Log.d("WAPP","LON: "+lon);
+
+                RequestParams params = new RequestParams();
+                params.put("lat", lat);
+                params.put("lon", lon);
+                params.put("appid", APP_ID);
+                requestData(params);
+            }
+
+
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+                Log.d("WAPP","STATUS CHANGED");
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+                Log.d("WAPP","PROVIDER ENABLED");
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+                Log.d("WAPP","PROVIDER DISABLED");
+            }
+        };
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            return;
+        }
+        mLocationManager.requestLocationUpdates(LOCATION_PROVIDER, MIN_TIME, MIN_DISTANCE, mLocationListener);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_CODE){
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Log.d("WAPP","PERMISSION GRANTED");
+                getForecastForCurrentLocation();
+            } else{
+                Log.d("WAPP","PERMISSION DENIED");
+            }
+        }
+    }
+
+    private void requestData(RequestParams params){
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(WEATHER_URL, params, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+                Log.d("WAPP", "JSON: " + response.toString());
+                Gson gson = new Gson();
+                Forecast forecast = gson.fromJson(response.toString(), Forecast.class);
+                Log.d("WAPP", "Forecast: " + forecast.toString());
+                //setBackground(weather);
+                //updateActivity(weather);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+                Log.e("WAPP","FAILED "+ throwable.toString());
+                Log.d("WAPP", "Status code " + statusCode);
+
+            }
+
+        });
     }
 }

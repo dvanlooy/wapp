@@ -30,8 +30,7 @@
         android:tint="@color/common_google_signin_btn_text_dark_focused"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/day_partial_cloudy" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/minTempText"
@@ -42,7 +41,6 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="33°C"
         android:textColor="@color/common_google_signin_btn_text_dark_focused"
         android:textSize="18sp"
         app:layout_constraintEnd_toStartOf="@+id/weatherIcon"
@@ -58,7 +56,6 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="Jamaica"
         android:textColor="@color/common_google_signin_btn_text_dark_focused"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -73,7 +70,6 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="99°C"
         android:textColor="@color/common_google_signin_btn_text_dark_focused"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -89,7 +85,6 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="66°C"
         android:textColor="@color/common_google_signin_btn_text_dark_focused"
         android:textSize="36sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -106,7 +101,6 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginBottom="8dp"
-        android:text="What a day!"
         android:textColor="@color/common_google_signin_btn_text_dark_focused"
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
