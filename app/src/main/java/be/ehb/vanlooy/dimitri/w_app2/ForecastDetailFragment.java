@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 
@@ -21,11 +22,16 @@ public class ForecastDetailFragment extends Fragment {
      * The fragment argument representing the item ID that this fragment
      * represents.
      */
-    public static final String ARG_TITLE = "title";
-    public static final String ARG_DETAIL = "detail";
+    public static final String TITLE = "title";
+    public static final String DETAILTEXT = "text";
+    public static final String DETAILTEMP = "temp";
+    public static final String DETAILMINTEMP = "min";
+    public static final String DETAILMAXTEMP = "max";
+    public static final String DETAILICON = "icon";
 
     private String mTitle;
-    private String mDetail;
+    private String mTemp, mMinTemp, mMaxTemp;
+    private int mIconId, mDescriptionId;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -38,25 +44,33 @@ public class ForecastDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(ARG_TITLE) && getArguments().containsKey(ARG_DETAIL)) {
+        if (getArguments().containsKey(DETAILICON) && getArguments().containsKey(DETAILTEXT)) {
 
-            mTitle = getArguments().getString(ARG_TITLE);
-            mDetail = getArguments().getString(ARG_DETAIL);
+            mTitle = getArguments().getString(TITLE);
+            mIconId = getArguments().getInt(DETAILICON);
+            mDescriptionId = getArguments().getInt(DETAILTEXT);
+            mTemp = getArguments().getString(DETAILTEMP);
+            mMinTemp = getArguments().getString(DETAILMINTEMP);
+            mMaxTemp = getArguments().getString(DETAILMAXTEMP);
+
 
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
-                System.out.println("mTitle === "+mTitle);
                 appBarLayout.setTitle(mTitle);
             }
         }else{
-            mTitle = getActivity().getIntent().getStringExtra(ARG_TITLE);
-            mDetail = getActivity().getIntent().getStringExtra(ARG_DETAIL);
+
+            mTitle = getArguments().getString(TITLE);
+            mIconId = getActivity().getIntent().getIntExtra(DETAILICON,0);
+            mDescriptionId = getActivity().getIntent().getIntExtra(DETAILTEXT,0);
+            mTemp = getActivity().getIntent().getStringExtra(DETAILTEMP);
+            mMinTemp = getActivity().getIntent().getStringExtra(DETAILMINTEMP);
+            mMaxTemp = getActivity().getIntent().getStringExtra(DETAILMAXTEMP);
 
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
-                System.out.println("mTitle === "+mTitle);
                 appBarLayout.setTitle(mTitle);
             }
         }
@@ -67,11 +81,20 @@ public class ForecastDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.forecast_detail, container, false);
 
-        // Show the dummy content as text in a TextView.
-        if (mDetail != null) {
-            ((TextView) rootView.findViewById(R.id.forecast_detail)).setText(mDetail);
-        }else{
-            ((TextView) rootView.findViewById(R.id.forecast_detail)).setText("DER IS IETS FOUT GELOPEN");
+        if (mDescriptionId != 0) {
+            ((TextView) rootView.findViewById(R.id.detailText)).setText(getResources().getString(mDescriptionId));
+        }
+        if (mIconId != 0) {
+            ((ImageView) rootView.findViewById(R.id.detailIcon)).setImageResource(mIconId);
+        }
+        if (mTemp != null) {
+            ((TextView) rootView.findViewById(R.id.detailTemp)).setText(mTemp);
+        }
+        if (mMinTemp != null) {
+            ((TextView) rootView.findViewById(R.id.detailMinTemp)).setText(mMinTemp);
+        }
+        if (mMaxTemp != null) {
+            ((TextView) rootView.findViewById(R.id.detailMaxTemp)).setText(mMaxTemp);
         }
 
         return rootView;

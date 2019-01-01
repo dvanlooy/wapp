@@ -1,6 +1,8 @@
 package be.ehb.vanlooy.dimitri.w_app2.entities;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 /*
 built with http://www.jsonschema2pojo.org/
@@ -244,8 +246,8 @@ public class CurrentWeather {
     public class Main {
 
         private Double temp;
-        private Integer humidity;
-        private Integer pressure;
+        private Double humidity;
+        private Double pressure;
         private Double temp_min;
         private Double temp_max;
 
@@ -264,7 +266,7 @@ public class CurrentWeather {
          * @param temp_min
          * @param temp
          */
-        public Main(Double temp, Integer humidity, Integer pressure, Double temp_min, Double temp_max) {
+        public Main(Double temp, Double humidity, Double pressure, Double temp_min, Double temp_max) {
             super();
             this.temp = temp;
             this.humidity = humidity;
@@ -284,19 +286,19 @@ public class CurrentWeather {
             this.temp = temp;
         }
 
-        public Integer getHumidity() {
+        public Double getHumidity() {
             return humidity;
         }
 
-        public void setHumidity(Integer humidity) {
+        public void setHumidity(Double humidity) {
             this.humidity = humidity;
         }
 
-        public Integer getPressure() {
+        public Double getPressure() {
             return pressure;
         }
 
-        public void setPressure(Integer pressure) {
+        public void setPressure(Double pressure) {
             this.pressure = pressure;
         }
 
@@ -386,6 +388,14 @@ public class CurrentWeather {
             this.country = country;
             this.sunrise = sunrise;
             this.sunset = sunset;
+        }
+
+        public String getTimeNotation(long unix){
+            String time;
+            Date date = new java.util.Date(unix*1000L);
+            SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mmz");
+            time = sdf.format(date);
+            return time;
         }
 
         public String getCountry() {

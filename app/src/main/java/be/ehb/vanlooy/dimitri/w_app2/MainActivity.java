@@ -52,21 +52,25 @@ public class MainActivity extends AppCompatActivity {
     TextView mMinTempText;
     TextView mDescriptionText;
     TextView mTempText;
+    TextView mSunriseText;
+    TextView mSunsetText;
     ImageView mWeatherIcon;
     ImageView mBackground;
     FloatingActionButton mSaveLocationButton;
+
 
     LocationManager mLocationManager;
     LocationListener mLocationListener;
     WappRepository mRepository;
 
     Favorite mCurrentlocation;
+    CurrentWeather mCurrentWeather;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        getWeatherForCurrentLocation();
         mRepository = WappRepository.getInstance(this.getApplication());
 
         mLocationText = (TextView) findViewById(R.id.locationText);
@@ -76,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
         mTempText = (TextView) findViewById(R.id.tempText);
         mWeatherIcon = (ImageView) findViewById(R.id.weatherIcon);
         mBackground = (ImageView) findViewById(R.id.background);
+        mSunriseText = (TextView) findViewById(R.id.sunriseText);
+        mSunsetText = (TextView) findViewById(R.id.sunsetText);
         mSaveLocationButton = (FloatingActionButton) findViewById(R.id.saveLocationButton);
 
         mSaveLocationButton.setOnClickListener(new View.OnClickListener() {
@@ -92,14 +98,16 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
-        getWeatherForCurrentLocation();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        getWeatherForCurrentLocation();
+        if (mCurrentWeather != null){
+            updateActivity(mCurrentWeather);
+        }else{
+            getWeatherForCurrentLocation();
+        }
     }
 
     @Override
@@ -229,11 +237,15 @@ public class MainActivity extends AppCompatActivity {
         String minTemp = String.valueOf(currentWeather.getMain().getInCelcius(currentWeather.getMain().getTemp_min()))+"°C";
         String location = currentWeather.getName()+", "+currentWeather.getSys().getCountry();
         String descriptionCode = "c"+String.valueOf(currentWeather.getWeather().get(0).getId());
+        String sunriseText = currentWeather.getSys().getTimeNotation(currentWeather.getSys().getSunrise());
+        String sunsetText = currentWeather.getSys().getTimeNotation(currentWeather.getSys().getSunset());
 
         mTempText.setText(temp);
         mLocationText.setText(location);
         mMaxTempText.setText(maxTemp);
         mMinTempText.setText(minTemp);
+        mSunsetText.setText(sunsetText);
+        mSunriseText.setText(sunriseText);
 
         int descriptionResourceID = getResources().getIdentifier(descriptionCode, "string", getPackageName());
         mDescriptionText.setText(getResources().getString(descriptionResourceID));

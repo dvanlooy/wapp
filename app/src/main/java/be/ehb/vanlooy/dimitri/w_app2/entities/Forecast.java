@@ -284,7 +284,7 @@ public class Forecast {
         private Double pressure;
         private Double sea_level;
         private Double grnd_level;
-        private Integer humidity;
+        private Double humidity;
         private Double temp_kf;
 
         /**
@@ -305,7 +305,7 @@ public class Forecast {
          * @param temp
          * @param grnd_level
          */
-        public Main(Double temp, Double temp_min, Double temp_max, Double pressure, Double sea_level, Double grnd_level, Integer humidity, Double temp_kf) {
+        public Main(Double temp, Double temp_min, Double temp_max, Double pressure, Double sea_level, Double grnd_level, Double humidity, Double temp_kf) {
             super();
             this.temp = temp;
             this.temp_min = temp_min;
@@ -369,11 +369,11 @@ public class Forecast {
             this.grnd_level = grnd_level;
         }
 
-        public Integer getHumidity() {
+        public Double getHumidity() {
             return humidity;
         }
 
-        public void setHumidity(Integer humidity) {
+        public void setHumidity(Double humidity) {
             this.humidity = humidity;
         }
 

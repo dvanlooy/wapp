@@ -2,9 +2,12 @@ package be.ehb.vanlooy.dimitri.w_app2.entities;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.os.Parcelable;
+
+import java.io.Serializable;
 
 @Entity(tableName = "favorites")
-public class Favorite {
+public class Favorite implements Serializable {
 
     @PrimaryKey(autoGenerate= true)
     private long id;

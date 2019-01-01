@@ -41,6 +41,17 @@ public class WappRepository {
         thread.start();
     }
 
+    public void deleteFavorite(final Favorite... favorites){
+        Runnable run = new Runnable() {
+            @Override
+            public void run() {
+                favoriteDAO.delete(favorites);
+            }
+        };
+        Thread thread = new Thread(run);
+        thread.start();
+    }
+
     public LiveData<Favorite[]> getFavorites(){
         return favoriteDAO.getAllFavorites();
     }

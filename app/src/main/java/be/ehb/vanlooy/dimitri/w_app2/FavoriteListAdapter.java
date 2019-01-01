@@ -50,6 +50,7 @@ public class FavoriteListAdapter extends RecyclerView.Adapter<FavoriteListAdapte
                     Intent intent = new Intent(mContext, FavoriteWeatherActivity.class);
                     intent.putExtra("lat", current.getLat());
                     intent.putExtra("lon", current.getLon());
+                    intent.putExtra("currentLocation", current);
                     mContext.startActivity(intent);
                 }
             });

@@ -14,14 +14,16 @@
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
         tools:srcCompat="@drawable/bg_night" />
 
     <ImageView
-        android:id="@+id/weatherIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/sunriseImage"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
@@ -29,23 +31,78 @@
         android:layout_marginRight="8dp"
         android:tint="@color/common_google_signin_btn_text_dark_focused"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/maxTempText"
+        app:layout_constraintTop_toBottomOf="@+id/tempText"
+        app:srcCompat="@drawable/sunrise" />
+
+    <ImageView
+        android:id="@+id/sunsetImage"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:tint="@color/common_google_signin_btn_text_dark_focused"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/maxTempText"
+        app:layout_constraintTop_toBottomOf="@+id/sunriseText"
+        app:srcCompat="@drawable/sunset" />
 
     <TextView
-        android:id="@+id/minTempText"
+        android:id="@+id/sunriseText"
         android:layout_width="wrap_content"
-        android:layout_height="21dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:textColor="@color/common_google_signin_btn_text_dark_focused"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toStartOf="@+id/weatherIcon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/maxTempText"
+        app:layout_constraintTop_toBottomOf="@+id/sunriseImage" />
+
+    <TextView
+        android:id="@+id/sunsetText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/maxTempText"
+        app:layout_constraintTop_toBottomOf="@+id/sunsetImage" />
+
+    <ImageView
+        android:id="@+id/weatherIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:tint="@color/common_google_signin_btn_text_dark_focused"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/weatherIcon" />
+        app:layout_constraintTop_toTopOf="@+id/background" />
+
+    <TextView
+        android:id="@+id/minTempText"
+        android:layout_width="wrap_content"
+        android:layout_height="21dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@+id/tempText"
+        app:layout_constraintTop_toBottomOf="@+id/weatherIcon" />
 
     <TextView
         android:id="@+id/locationText"
@@ -68,13 +125,10 @@
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:textColor="@color/common_google_signin_btn_text_dark_focused"
         android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/weatherIcon"
-        app:layout_constraintTop_toTopOf="@+id/weatherIcon" />
+        app:layout_constraintStart_toEndOf="@+id/tempText"
+        app:layout_constraintTop_toBottomOf="@+id/weatherIcon" />
 
     <TextView
         android:id="@+id/tempText"

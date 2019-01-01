@@ -165,8 +165,22 @@ public class ForecastListActivity extends AppCompatActivity {
                 if (mTwoPane) {
                     Bundle arguments = new Bundle();
 
-                    arguments.putString(ForecastDetailFragment.ARG_TITLE, formattedDate);
-                    arguments.putString(ForecastDetailFragment.ARG_DETAIL, item.getMain().toString());
+                    arguments.putString(ForecastDetailFragment.TITLE, formattedDate);
+
+                    String suffix = IconHelper.getWeatherIcon(item.getWeather().get(0).getId());
+                    int imageResourceID = view.getResources().getIdentifier("day_"+suffix, "drawable", view.getContext().getPackageName());
+                    arguments.putInt(ForecastDetailFragment.DETAILICON, imageResourceID);
+
+                    String descriptionCode = "c"+String.valueOf(item.getWeather().get(0).getId());
+                    int descriptionResourceID = view.getResources().getIdentifier(descriptionCode, "string", view.getContext().getPackageName());
+                    arguments.putInt(ForecastDetailFragment.DETAILTEXT, descriptionResourceID);
+
+                    arguments.putString(ForecastDetailFragment.DETAILTEMP, String.valueOf(item.getMain().getInCelcius(item.getMain().getTemp()))+"°C");
+                    arguments.putString(ForecastDetailFragment.DETAILMINTEMP, String.valueOf(item.getMain().getInCelcius(item.getMain().getTemp_min()))+"°C");
+                    arguments.putString(ForecastDetailFragment.DETAILMAXTEMP, String.valueOf(item.getMain().getInCelcius(item.getMain().getTemp_max()))+"°C");
+
+
+
                     ForecastDetailFragment fragment = new ForecastDetailFragment();
                     fragment.setArguments(arguments);
                     mParentActivity.getSupportFragmentManager().beginTransaction()
@@ -175,8 +189,19 @@ public class ForecastListActivity extends AppCompatActivity {
                 } else {
                     Context context = view.getContext();
                     Intent intent = new Intent(context, ForecastDetailActivity.class);
-                    intent.putExtra(ForecastDetailFragment.ARG_TITLE, formattedDate);
-                    intent.putExtra(ForecastDetailFragment.ARG_DETAIL, item.getMain().toString());
+                    intent.putExtra(ForecastDetailFragment.TITLE, formattedDate);
+
+                    String suffix = IconHelper.getWeatherIcon(item.getWeather().get(0).getId());
+                    int imageResourceID = view.getResources().getIdentifier("day_"+suffix, "drawable", view.getContext().getPackageName());
+                    intent.putExtra(ForecastDetailFragment.DETAILICON, imageResourceID);
+
+                    String descriptionCode = "c"+String.valueOf(item.getWeather().get(0).getId());
+                    int descriptionResourceID = view.getResources().getIdentifier(descriptionCode, "string", view.getContext().getPackageName());
+                    intent.putExtra(ForecastDetailFragment.DETAILTEXT, descriptionResourceID);
+
+                    intent.putExtra(ForecastDetailFragment.DETAILTEMP, String.valueOf(item.getMain().getInCelcius(item.getMain().getTemp()))+"°C");
+                    intent.putExtra(ForecastDetailFragment.DETAILMINTEMP, String.valueOf(item.getMain().getInCelcius(item.getMain().getTemp_min()))+"°C");
+                    intent.putExtra(ForecastDetailFragment.DETAILMAXTEMP, String.valueOf(item.getMain().getInCelcius(item.getMain().getTemp_max()))+"°C");
 
                     context.startActivity(intent);
                 }
