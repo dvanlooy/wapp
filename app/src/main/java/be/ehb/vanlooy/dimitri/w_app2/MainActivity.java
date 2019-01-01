@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getWeatherForCurrentLocation();
+
         mRepository = WappRepository.getInstance(this.getApplication());
 
         mLocationText = (TextView) findViewById(R.id.locationText);
@@ -83,6 +83,12 @@ public class MainActivity extends AppCompatActivity {
         mSunriseText = (TextView) findViewById(R.id.sunriseText);
         mSunsetText = (TextView) findViewById(R.id.sunsetText);
         mSaveLocationButton = (FloatingActionButton) findViewById(R.id.saveLocationButton);
+        if (mCurrentWeather != null){
+            setBackground(mCurrentWeather);
+            updateActivity(mCurrentWeather);
+        }else{
+            getWeatherForCurrentLocation();
+        }
 
         mSaveLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,11 +110,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if (mCurrentWeather != null){
+            setBackground(mCurrentWeather);
             updateActivity(mCurrentWeather);
         }else{
             getWeatherForCurrentLocation();
         }
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
