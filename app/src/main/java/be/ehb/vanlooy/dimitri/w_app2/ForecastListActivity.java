@@ -20,6 +20,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,14 +31,14 @@ import com.loopj.android.http.RequestParams;
 
 import org.json.JSONObject;
 
-import be.ehb.vanlooy.dimitri.w_app2.dummy.DummyContent;
-import be.ehb.vanlooy.dimitri.w_app2.entities.Favorite;
-import be.ehb.vanlooy.dimitri.w_app2.entities.Forecast;
-import be.ehb.vanlooy.dimitri.w_app2.repositories.WappRepository;
-import cz.msebera.android.httpclient.Header;
-
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import be.ehb.vanlooy.dimitri.w_app2.Utils.IconHelper;
+import be.ehb.vanlooy.dimitri.w_app2.entities.Forecast;
+import cz.msebera.android.httpclient.Header;
 
 /**
  * An activity representing a list of Forecasts. This activity
@@ -68,7 +69,8 @@ public class ForecastListActivity extends AppCompatActivity {
     LocationListener mLocationListener;
 
 
-    Favorite mCurrentlocation;
+
+    SimpleItemRecyclerViewAdapter mAdapter;
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -131,8 +133,8 @@ public class ForecastListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, mItems, mTwoPane));
+        mAdapter = new SimpleItemRecyclerViewAdapter(this, mItems, mTwoPane);
+        recyclerView.setAdapter(mAdapter);
     }
 
     public static class SimpleItemRecyclerViewAdapter
@@ -144,10 +146,27 @@ public class ForecastListActivity extends AppCompatActivity {
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DummyContent.DummyItem item = (DummyContent.DummyItem) view.getTag();
+                Forecast.Item item = (Forecast.Item) view.getTag();
+                String dt = item.getDt_txt();
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Date date = null;
+                String formattedDate= "";
+                try {
+                    date = format.parse(dt);
+                    System.out.println(date);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                if (date != null){
+                    format = new SimpleDateFormat("EEEE, HH:mm");
+                    formattedDate = format.format(date);
+                }
+
                 if (mTwoPane) {
                     Bundle arguments = new Bundle();
-                    arguments.putString(ForecastDetailFragment.ARG_ITEM_ID, item.id);
+
+                    arguments.putString(ForecastDetailFragment.ARG_TITLE, formattedDate);
+                    arguments.putString(ForecastDetailFragment.ARG_DETAIL, item.getMain().toString());
                     ForecastDetailFragment fragment = new ForecastDetailFragment();
                     fragment.setArguments(arguments);
                     mParentActivity.getSupportFragmentManager().beginTransaction()
@@ -156,7 +175,8 @@ public class ForecastListActivity extends AppCompatActivity {
                 } else {
                     Context context = view.getContext();
                     Intent intent = new Intent(context, ForecastDetailActivity.class);
-                    intent.putExtra(ForecastDetailFragment.ARG_ITEM_ID, item.id);
+                    intent.putExtra(ForecastDetailFragment.ARG_TITLE, formattedDate);
+                    intent.putExtra(ForecastDetailFragment.ARG_DETAIL, item.getMain().toString());
 
                     context.startActivity(intent);
                 }
@@ -181,8 +201,32 @@ public class ForecastListActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.mIdView.setText(mValues.get(position).getDt());
-            holder.mContentView.setText(mValues.get(position).getDt_txt());
+
+            String temp = String.valueOf(mValues.get(position).getMain().getInCelcius(mValues.get(position).getMain().getTemp()))+"°C";
+            String descriptionCode = "c"+String.valueOf(mValues.get(position).getWeather().get(0).getId());
+            int descriptionResourceID = holder.itemView.getContext().getResources().getIdentifier(descriptionCode, "string", holder.itemView.getContext().getPackageName());
+            String description = holder.itemView.getContext().getResources().getString(descriptionResourceID);
+
+            String dt = mValues.get(position).getDt_txt();
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date date = null;
+            try {
+                date = format.parse(dt);
+                System.out.println(date);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (date != null){
+                format = new SimpleDateFormat("EEEE, HH:mm");
+                holder.mContentView.setText(format.format(date));
+
+
+                String suffix = IconHelper.getWeatherIcon(mValues.get(position).getWeather().get(0).getId());
+                String prefix = "day_";
+                int imageResourceID = holder.itemView.getContext().getResources().getIdentifier(prefix+suffix, "drawable", holder.itemView.getContext().getPackageName());
+                holder.mIconView.setImageResource(imageResourceID);
+            }
+
 
             holder.itemView.setTag(mValues.get(position));
             holder.itemView.setOnClickListener(mOnClickListener);
@@ -194,13 +238,13 @@ public class ForecastListActivity extends AppCompatActivity {
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
-            final TextView mIdView;
             final TextView mContentView;
+            final ImageView mIconView;
 
             ViewHolder(View view) {
                 super(view);
-                mIdView = (TextView) view.findViewById(R.id.id_text);
                 mContentView = (TextView) view.findViewById(R.id.content);
+                mIconView = (ImageView) view.findViewById(R.id.forecastIcon);
             }
         }
     }
@@ -273,7 +317,9 @@ public class ForecastListActivity extends AppCompatActivity {
                 Gson gson = new Gson();
                 Forecast forecast = gson.fromJson(response.toString(), Forecast.class);
                 Log.d("WAPP", "Forecast: " + forecast.toString());
+                mItems.clear();
                 mItems.addAll(forecast.getList());
+                mAdapter.notifyDataSetChanged();
             }
 
             @Override

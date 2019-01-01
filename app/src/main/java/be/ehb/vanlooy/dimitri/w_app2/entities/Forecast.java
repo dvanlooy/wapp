@@ -317,6 +317,10 @@ public class Forecast {
             this.temp_kf = temp_kf;
         }
 
+        public int getInCelcius(double temp){
+            return (int) Math.rint(temp - 273.15);
+        }
+
         public Double getTemp() {
             return temp;
         }
@@ -383,7 +387,10 @@ public class Forecast {
 
         @Override
         public String toString() {
-            return "Main{" +
+            return String.valueOf(getInCelcius(getTemp()))+"°C\n"+
+                    "Min: "+String.valueOf(getInCelcius(getTemp_min()))+"°C\n"+
+                    "Max: "+String.valueOf(getInCelcius(getTemp_max()))+"°C\n";
+            /*            return "Main{" +
                     "temp=" + temp +
                     ", temp_min=" + temp_min +
                     ", temp_max=" + temp_max +
@@ -392,7 +399,7 @@ public class Forecast {
                     ", grnd_level=" + grnd_level +
                     ", humidity=" + humidity +
                     ", temp_kf=" + temp_kf +
-                    '}';
+                    '}';*/
         }
     }
 
