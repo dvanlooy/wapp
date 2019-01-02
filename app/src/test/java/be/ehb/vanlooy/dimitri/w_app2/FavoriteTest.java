@@ -1,8 +1,5 @@
 package be.ehb.vanlooy.dimitri.w_app2;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +12,7 @@ import be.ehb.vanlooy.dimitri.w_app2.entities.Favorite;
  */
 public class FavoriteTest {
     @Test
-    public void test_Getters() throws JSONException {
+    public void test_Getters(){
 
         Favorite favorite = new Favorite();
         favorite.setCity("test");
