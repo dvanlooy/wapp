@@ -3,8 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".test"
-    android:id="@+id/forecast_detail">
+    android:background="@drawable/bg_blank"
+    android:id="@+id/forecast_detail"
+    >
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"

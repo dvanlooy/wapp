@@ -2,6 +2,7 @@ package be.ehb.vanlooy.dimitri.w_app2;
 
 import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -199,6 +200,16 @@ public class FavoriteWeatherActivity extends AppCompatActivity {
         if (ts != null && sunset != null && sunrise != null){
             if (ts < sunrise || ts >= sunset){
                 prefix = "night_";
+                mWeatherIcon.setColorFilter(ContextCompat.getColor(getApplicationContext(),R.color.colorVeryLight));
+                mSunriseIcon.setColorFilter(ContextCompat.getColor(getApplicationContext(),R.color.colorVeryLight));
+                mSunsetIcon.setColorFilter(ContextCompat.getColor(getApplicationContext(),R.color.colorVeryLight));
+                mSunsetText.setTextColor(ContextCompat.getColor(getApplicationContext(),R.color.colorVeryLight));
+                mSunriseText.setTextColor(ContextCompat.getColor(getApplicationContext(),R.color.colorVeryLight));
+                mTempText.setTextColor(ContextCompat.getColor(getApplicationContext(),R.color.colorVeryLight));
+                mMaxTempText.setTextColor(ContextCompat.getColor(getApplicationContext(),R.color.colorVeryLight));
+                mMinTempText.setTextColor(ContextCompat.getColor(getApplicationContext(),R.color.colorVeryLight));
+                mLocationText.setTextColor(ContextCompat.getColor(getApplicationContext(),R.color.colorVeryLight));
+                mDescriptionText.setTextColor(ContextCompat.getColor(getApplicationContext(),R.color.colorVeryLight));
             }else{
                 prefix = "day_";
             }
