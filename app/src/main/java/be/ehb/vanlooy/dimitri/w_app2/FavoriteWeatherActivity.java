@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,9 +43,12 @@ public class FavoriteWeatherActivity extends AppCompatActivity {
     TextView mDescriptionText;
     TextView mTempText;
     ImageView mWeatherIcon;
+    ImageView mSunriseIcon;
+    ImageView mSunsetIcon;
     ImageView mBackground;
     TextView mSunriseText;
     TextView mSunsetText;
+    ProgressBar mProgressBar;
     FloatingActionButton mDeleteLocationButton;
 
     CurrentWeather mCurrentWeather;
@@ -78,9 +82,12 @@ public class FavoriteWeatherActivity extends AppCompatActivity {
         mDescriptionText = (TextView) findViewById(R.id.descriptionText);
         mTempText = (TextView) findViewById(R.id.tempText);
         mWeatherIcon = (ImageView) findViewById(R.id.weatherIcon);
+        mSunriseIcon = (ImageView) findViewById(R.id.sunriseImage);
+        mSunsetIcon = (ImageView) findViewById(R.id.sunsetImage);
         mBackground = (ImageView) findViewById(R.id.background);
         mSunriseText = (TextView) findViewById(R.id.sunriseText);
         mSunsetText = (TextView) findViewById(R.id.sunsetText);
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mDeleteLocationButton = (FloatingActionButton) findViewById(R.id.deleteLocationButton);
 
         mCurrentlocation = (Favorite) getIntent().getSerializableExtra("currentLocation") ;
@@ -144,6 +151,7 @@ public class FavoriteWeatherActivity extends AppCompatActivity {
                 CurrentWeather currentWeather = gson.fromJson(response.toString(), CurrentWeather.class);
                 Log.d("WAPP", "CurrentWeather: " + currentWeather.toString());
                 mCurrentWeather = currentWeather;
+                mProgressBar.setVisibility(View.INVISIBLE);
                 setBackground(currentWeather);
                 updateActivity(currentWeather);
             }
@@ -156,6 +164,11 @@ public class FavoriteWeatherActivity extends AppCompatActivity {
 
             }
 
+            @Override
+            public void onStart() {
+                super.onStart();
+                mProgressBar.setVisibility(View.VISIBLE);
+            }
         });
     }
     private void updateActivity(CurrentWeather currentWeather){
@@ -192,6 +205,11 @@ public class FavoriteWeatherActivity extends AppCompatActivity {
         }
         int imageResourceID = getResources().getIdentifier(prefix+suffix, "drawable", getPackageName());
         mWeatherIcon.setImageResource(imageResourceID);
+
+        imageResourceID = getResources().getIdentifier("sunrise", "drawable", getPackageName());
+        mSunriseIcon.setImageResource(imageResourceID);
+        imageResourceID = getResources().getIdentifier("sunset", "drawable", getPackageName());
+        mSunsetIcon.setImageResource(imageResourceID);
     }
     private void setBackground(CurrentWeather currentWeather) {
 

@@ -21,9 +21,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -63,11 +67,11 @@ public class ForecastListActivity extends AppCompatActivity {
     String TAG = ForecastListActivity.class.getSimpleName();
     CharSequence textToast;
     List<Forecast.Item> mItems = new ArrayList<Forecast.Item>();
-
+    ProgressBar mProgressBar;
 
     LocationManager mLocationManager;
     LocationListener mLocationListener;
-
+    FusedLocationProviderClient mFusedLocationClient;
 
 
     SimpleItemRecyclerViewAdapter mAdapter;
@@ -82,7 +86,8 @@ public class ForecastListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forecast_list);
-
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
@@ -276,29 +281,31 @@ public class ForecastListActivity extends AppCompatActivity {
 
     private void getForecastForCurrentLocation() {
         Log.d("WAPP","GETTING FORECAST FOR CURRENT LOCATION");
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE);
+            return;
+        }
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            requestForecast(location);
+                        }
+                    }
+                });
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         mLocationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 Log.d("WAPP","LOCATION CHANGED");
-                String lat = String.valueOf(location.getLatitude());
-                String lon = String.valueOf(location.getLongitude());
-                Log.d("WAPP","LAT: "+lat);
-                Log.d("WAPP","LON: "+lon);
-
-                RequestParams params = new RequestParams();
-                params.put("lat", lat);
-                params.put("lon", lon);
-                params.put("appid", APP_ID);
-                requestData(params);
+                requestForecast(location);
             }
-
-
 
             @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-                Log.d("WAPP","STATUS CHANGED");
-            }
+            public void onStatusChanged(String provider, int status, Bundle extras) { Log.d("WAPP","STATUS CHANGED"); }
 
             @Override
             public void onProviderEnabled(String provider) {
@@ -311,10 +318,7 @@ public class ForecastListActivity extends AppCompatActivity {
             }
         };
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
-            return;
-        }
+        mLocationManager.requestLocationUpdates(LOCATION_PROVIDER, MIN_TIME, MIN_DISTANCE, mLocationListener);
         mLocationManager.requestLocationUpdates(LOCATION_PROVIDER, MIN_TIME, MIN_DISTANCE, mLocationListener);
     }
 
@@ -332,7 +336,17 @@ public class ForecastListActivity extends AppCompatActivity {
         }
     }
 
-    private void requestData(RequestParams params){
+    private void requestForecast(Location location){
+        String lat = String.valueOf(location.getLatitude());
+        String lon = String.valueOf(location.getLongitude());
+        RequestParams params = new RequestParams();
+        params.put("lat", lat);
+        params.put("lon", lon);
+        params.put("appid", APP_ID);
+        executeRequest(params);
+    }
+
+    private void executeRequest(RequestParams params){
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(WEATHER_URL, params, new JsonHttpResponseHandler(){
             @Override
@@ -342,6 +356,7 @@ public class ForecastListActivity extends AppCompatActivity {
                 Gson gson = new Gson();
                 Forecast forecast = gson.fromJson(response.toString(), Forecast.class);
                 Log.d("WAPP", "Forecast: " + forecast.toString());
+                mProgressBar.setVisibility(View.INVISIBLE);
                 mItems.clear();
                 mItems.addAll(forecast.getList());
                 mAdapter.notifyDataSetChanged();
@@ -354,6 +369,12 @@ public class ForecastListActivity extends AppCompatActivity {
                 Log.d("WAPP", "Status code " + statusCode);
 
             }
+            @Override
+            public void onStart() {
+                super.onStart();
+                mProgressBar.setVisibility(View.VISIBLE);
+            }
+
 
         });
     }

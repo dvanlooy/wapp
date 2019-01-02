@@ -18,9 +18,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -40,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     final int REQUEST_CODE = 123;
     final String WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather";
     final String APP_ID = "1e41911417841305361f8f6d203b4d9c";
-    final long MIN_TIME = 0;
+    final long MIN_TIME = 10;
     final float MIN_DISTANCE = 1000;
     final String LOCATION_PROVIDER = LocationManager.GPS_PROVIDER;
     final int DURATION = Toast.LENGTH_SHORT;
@@ -55,12 +59,16 @@ public class MainActivity extends AppCompatActivity {
     TextView mSunriseText;
     TextView mSunsetText;
     ImageView mWeatherIcon;
+    ImageView mSunriseIcon;
+    ImageView mSunsetIcon;
     ImageView mBackground;
+    ProgressBar mProgressBar;
     FloatingActionButton mSaveLocationButton;
 
 
     LocationManager mLocationManager;
     LocationListener mLocationListener;
+    FusedLocationProviderClient mFusedLocationClient;
     WappRepository mRepository;
 
     Favorite mCurrentlocation;
@@ -72,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mRepository = WappRepository.getInstance(this.getApplication());
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         mLocationText = (TextView) findViewById(R.id.locationText);
         mMaxTempText = (TextView) findViewById(R.id.maxTempText);
@@ -79,23 +88,23 @@ public class MainActivity extends AppCompatActivity {
         mDescriptionText = (TextView) findViewById(R.id.descriptionText);
         mTempText = (TextView) findViewById(R.id.tempText);
         mWeatherIcon = (ImageView) findViewById(R.id.weatherIcon);
+        mSunriseIcon = (ImageView) findViewById(R.id.sunriseImage);
+        mSunsetIcon = (ImageView) findViewById(R.id.sunsetImage);
         mBackground = (ImageView) findViewById(R.id.background);
         mSunriseText = (TextView) findViewById(R.id.sunriseText);
         mSunsetText = (TextView) findViewById(R.id.sunsetText);
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mSaveLocationButton = (FloatingActionButton) findViewById(R.id.saveLocationButton);
-        if (mCurrentWeather != null){
-            setBackground(mCurrentWeather);
-            updateActivity(mCurrentWeather);
-        }else{
-            getWeatherForCurrentLocation();
-        }
+
+        getWeatherForCurrentLocation();
+
 
         mSaveLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 //TODO: Add location to database
-                if (v.getId() == R.id.saveLocationButton && mCurrentlocation != null){
+                if (v.getId() == R.id.saveLocationButton && mCurrentlocation != null) {
                     mRepository.insertFavorite(mCurrentlocation);
                     textToast = getString(R.string.saveLocation);
                     Toast toast = Toast.makeText(v.getContext(), textToast, DURATION);
@@ -109,14 +118,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mCurrentWeather != null){
+        if (mCurrentWeather != null) {
             setBackground(mCurrentWeather);
             updateActivity(mCurrentWeather);
-        }else{
+        } else {
             getWeatherForCurrentLocation();
         }
     }
-
 
 
     @Override
@@ -129,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Intent intent;
-        switch(item.getItemId()) {
+        switch (item.getItemId()) {
             case R.id.menu_favorites:
                 intent = new Intent(this, FavoritesActivity.class);
                 this.startActivity(intent);
@@ -150,30 +158,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getWeatherForCurrentLocation() {
-        Log.d("WAPP","GETTING WEATHER FOR CURRENT LOCATION");
+        Log.d("WAPP", "GETTING WEATHER FOR CURRENT LOCATION");
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE);
+            return;
+        }
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            requestWeather(location);
+                        }
+                    }
+                });
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         mLocationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 Log.d("WAPP","LOCATION CHANGED");
-                String lat = String.valueOf(location.getLatitude());
-                String lon = String.valueOf(location.getLongitude());
-                Log.d("WAPP","LAT: "+lat);
-                Log.d("WAPP","LON: "+lon);
-
-                RequestParams params = new RequestParams();
-                params.put("lat", lat);
-                params.put("lon", lon);
-                params.put("appid", APP_ID);
-                requestData(params);
+                requestWeather(location);
             }
-
-
 
             @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-                Log.d("WAPP","STATUS CHANGED");
-            }
+            public void onStatusChanged(String provider, int status, Bundle extras) { Log.d("WAPP","STATUS CHANGED"); }
 
             @Override
             public void onProviderEnabled(String provider) {
@@ -186,10 +197,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
-            return;
-        }
         mLocationManager.requestLocationUpdates(LOCATION_PROVIDER, MIN_TIME, MIN_DISTANCE, mLocationListener);
     }
 
@@ -207,7 +214,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void requestData(RequestParams params){
+    private void requestWeather(Location location){
+        String lat = String.valueOf(location.getLatitude());
+        String lon = String.valueOf(location.getLongitude());
+        RequestParams params = new RequestParams();
+        params.put("lat", lat);
+        params.put("lon", lon);
+        params.put("appid", APP_ID);
+        executeRequest(params);
+    }
+
+    private void executeRequest(RequestParams params){
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(WEATHER_URL, params, new JsonHttpResponseHandler(){
             @Override
@@ -218,6 +235,7 @@ public class MainActivity extends AppCompatActivity {
                 Gson gson = new Gson();
                 CurrentWeather currentWeather = gson.fromJson(response.toString(), CurrentWeather.class);
                 Log.d("WAPP", "CurrentWeather: " + currentWeather.toString());
+                mProgressBar.setVisibility(View.INVISIBLE);
                 setBackground(currentWeather);
                 updateActivity(currentWeather);
 
@@ -236,6 +254,12 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("WAPP", "Status code " + statusCode);
 
             }
+            @Override
+            public void onStart() {
+                super.onStart();
+                mProgressBar.setVisibility(View.VISIBLE);
+            }
+
 
         });
     }
@@ -273,6 +297,11 @@ public class MainActivity extends AppCompatActivity {
         }
         int imageResourceID = getResources().getIdentifier(prefix+suffix, "drawable", getPackageName());
         mWeatherIcon.setImageResource(imageResourceID);
+
+        imageResourceID = getResources().getIdentifier("sunrise", "drawable", getPackageName());
+        mSunriseIcon.setImageResource(imageResourceID);
+        imageResourceID = getResources().getIdentifier("sunset", "drawable", getPackageName());
+        mSunsetIcon.setImageResource(imageResourceID);
     }
     private void setBackground(CurrentWeather currentWeather) {
 
